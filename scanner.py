@@ -1,33 +1,51 @@
-import yfinance as yf
 import pandas as pd
+import yfinance as yf
 
-from indicators import calculate_rsi, calculate_sma
+from indicators import calculate_rsi
+from indicators import calculate_sma
+
+from config import *
 
 
-# ==========================
-# Load Stock List
-# ==========================
+# --------------------------
+# Load Symbols
+# --------------------------
 
 with open("symbols.txt") as f:
-    symbols = [x.strip() for x in f if x.strip()]
-
-print("Total Symbols :", len(symbols))
+    SYMBOLS = [x.strip() for x in f if x.strip()]
 
 
-# ==========================
-# Test One Stock
-# ==========================
+print("Total Stocks :", len(SYMBOLS))
 
-symbol = symbols[0]
 
-print("Downloading :", symbol)
+# --------------------------
+# Download Function
+# --------------------------
 
-df = yf.download(
-    symbol + ".NS",
-    period="1y",
-    interval="1d",
-    progress=False,
-    auto_adjust=False
-)
+def download_stock(symbol):
 
-print(df.tail())
+    try:
+
+        df = yf.download(
+
+            symbol + ".NS",
+
+            period=DOWNLOAD_PERIOD,
+
+            interval=DOWNLOAD_INTERVAL,
+
+            auto_adjust=False,
+
+            progress=False
+
+        )
+
+        if len(df) == 0:
+
+            return None
+
+        return df
+
+    except:
+
+        return None
