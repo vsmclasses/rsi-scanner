@@ -1,0 +1,33 @@
+name: Chartink Auto Scanner
+
+on:
+  schedule:
+    # Mon-Fri Market hours mein har 15 min run hoga (UTC time format)
+    - cron: '*/15 3-10 * * 1-5'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install requests beautifulsoup4 pandas
+
+      - name: Fetch Chartink Results
+        run: python chartink_scraper.py
+
+      - name: Push to Repo
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add rsi.html
+          git commit -m "Auto-update Chartink live scan" || exit 0
+          git push
