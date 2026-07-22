@@ -27,3 +27,12 @@ jobs:
       - name: Run script
         run: |
           python main.py  # <-- Agar aapki file ka naam alag hai (jaise app.py), toh yahan badal lein
+
+
+- name: Commit and Push Updated Results
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add rsi.html
+          git commit -m "Auto-update RSI Scanner results" || exit 0
+          git push
