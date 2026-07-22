@@ -25,9 +25,24 @@ print("Total Stocks :", len(SYMBOLS))
 def download_stock(symbol):
 
     try:
-
+from indicators import create_weekly
+from indicators import create_monthly
         df = yf.download(
 
+
+            df.index = pd.to_datetime(df.index)
+
+daily = df.copy()
+
+weekly = create_weekly(df)
+
+monthly = create_monthly(df)
+
+print(daily.tail())
+
+print(weekly.tail())
+
+print(monthly.tail())
             symbol + ".NS",
 
             period=DOWNLOAD_PERIOD,
