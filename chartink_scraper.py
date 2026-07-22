@@ -70,22 +70,23 @@ if 'data' in data and len(data['data']) > 0:
     else:
         df['Volume'] = "-"
 
-    # Stock Name
+    # Stock Name & Symbol
     df['Stock Name'] = df['name'] if 'name' in df.columns else df.get('sr', '')
+    df['Symbol'] = df['nsecode'] if 'nsecode' in df.columns else ''
 
     # TradingView Daily Chart Link Button
     df['Chart'] = df['nsecode'].apply(
         lambda symbol: f'<a href="https://in.tradingview.com/chart/?symbol=NSE:{symbol}&interval=D" target="_blank" class="chart-btn">📈 Daily Chart</a>'
     )
 
-    # Select only Stock Name, CMP, Volume, Chart
-    final_df = df[['Stock Name', 'CMP', 'Volume', 'Chart']].copy()
+    # Columns Sequence: Stock Name, Symbol, CMP, Volume, Chart
+    final_df = df[['Stock Name', 'Symbol', 'CMP', 'Volume', 'Chart']].copy()
 
     html_table = final_df.to_html(index=False, escape=False, classes='custom-table')
 else:
     html_table = "<p style='text-align:center; padding:20px; font-weight:bold;'>Abhi koi stock filter mein nahi aaya.</p>"
 
-# 3. HTML Page with Clean UI Styling
+# 3. HTML Page Styling
 full_html = f"""
 <!DOCTYPE html>
 <html>
@@ -153,4 +154,4 @@ full_html = f"""
 with open("rsi.html", "w", encoding="utf-8") as f:
     f.write(full_html)
 
-print("Scraper successfully updated with TradingView Daily Chart links!")
+print("Scraper successfully updated with Symbol column!")
