@@ -4,27 +4,74 @@
 <head>
     <meta charset="utf-8">
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 10px; }
-        table { width: 100%; border-collapse: collapse; font-size: 14px; text-align: left; }
-        th { background-color: #f0f4f9; color: #333; padding: 10px; border-bottom: 2px solid #ccc; font-weight: 600; text-align: center; }
-        td { padding: 8px 10px; border-bottom: 1px solid #eee; text-align: center; }
-        tr:hover { background-color: #f8f9fa; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 10px;
+            background-color: #fff;
+        }
+        table.custom-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            text-align: left;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        table.custom-table th {
+            background-color: #1e293b;
+            color: #ffffff;
+            padding: 12px 15px;
+            font-weight: 600;
+            text-align: center;
+        }
+        table.custom-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: center;
+            color: #0f172a;
+            font-weight: 500;
+        }
+        table.custom-table td:first-child {
+            font-weight: bold;
+            text-align: left;
+            padding-left: 20px;
+        }
+        table.custom-table tr:hover {
+            background-color: #f8fafc;
+        }
+        /* Daily Chart Button Styling */
+        .chart-btn {
+            background-color: #2563eb;
+            color: #ffffff !important;
+            padding: 6px 14px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+            transition: background-color 0.2s ease;
+        }
+        .chart-btn:hover {
+            background-color: #1d4ed8;
+        }
     </style>
 </head>
 <body>
-    <table border="1" class="dataframe chartink-table">
+    <table border="1" class="dataframe custom-table">
   <thead>
     <tr style="text-align: right;">
-      <th>Sr.</th>
       <th>Stock Name</th>
-      <th>Symbol</th>
+      <th>CMP</th>
+      <th>Volume</th>
+      <th>Chart</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td>1</td>
       <td>Apollo Micro Systems Ltd</td>
-      <td>APOLLO</td>
+      <td>540,879.00</td>
+      <td>13,696,045</td>
+      <td><a href="https://in.tradingview.com/chart/?symbol=NSE:APOLLO&interval=D" target="_blank" class="chart-btn">📈 Daily Chart</a></td>
     </tr>
   </tbody>
 </table>
