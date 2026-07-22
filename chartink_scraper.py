@@ -1,71 +1,61 @@
-import cloudscraper
+import time
+import json
 import pandas as pd
-from bs4 import BeautifulSoup
-import re
+from playwright.sync_api import sync_playwright
 
 screener_url = "https://chartink.com/screener/vikasrsi"
-process_url = "https://chartink.com/screener/process"
 
-# Cloudflare bypass session setup
-scraper = cloudscraper.create_scraper(
-    browser={
-        'browser': 'chrome',
-        'platform': 'windows',
-        'desktop': True
-    }
-)
+captured_data = {}
 
-try:
-    # 1. Page fetch for CSRF Token and scan_clause
-    response = scraper.get(screener_url)
-    soup = BeautifulSoup(response.text, 'html.parser')
+def handle_response(response):
+    global captured_data
+    # Network request mein se Chartink process API ka exact JSON response pakdna
+    if "screener/process" in response.url and response.status == 200:
+        try:
+            captured_data = response.json()
+            print("Successfully captured Chartink JSON response!")
+        except Exception as e:
+            print("Error parsing captured JSON:", e)
 
-    # CSRF Token
-    csrf_meta = soup.find('meta', {'name': 'csrf-token'})
-    csrf_token = csrf_meta['content'] if csrf_meta else ''
+with sync_playwright() as p:
+    print("Launching headless Chromium browser...")
+    browser = p.chromium.launch(
+        headless=True,
+        args=["--no-sandbox", "--disable-setuid-sandbox"]
+    )
+    
+    # Realistic User Agent simulation
+    context = browser.new_context(
+        user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+    )
+    
+    page = context.new_page()
+    
+    # Network response listener attach karein
+    page.on("response", handle_response)
+    
+    print(f"Opening Chartink URL: {screener_url}")
+    page.goto(screener_url, wait_until="networkidle", timeout=60000)
+    
+    # Extra wait taaki agar koi button click/scan ho raha ho toh complete ho jaaye
+    page.wait_for_timeout(5000)
+    
+    browser.close()
 
-    # Extract scan_clause formula
-    scan_clause = ""
-    clause_input = soup.find('input', {'name': 'scan_clause'}) or soup.find('textarea', {'id': 'scan_clause'})
-    if clause_input:
-        scan_clause = clause_input.get('value', '')
+data = captured_data
 
-    if not scan_clause:
-        match = re.search(r'scan_clause["\']?\s*:\s*["\'](.*?)["\']', response.text)
-        if match:
-            scan_clause = match.group(1)
-
-    headers = {
-        'x-csrf-token': csrf_token,
-        'X-Requested-With': 'XMLHttpRequest',
-        'Origin': 'https://chartink.com',
-        'Referer': screener_url
-    }
-
-    payload = {
-        'scan_clause': scan_clause
-    }
-
-    # 2. POST request to fetch live JSON stocks data
-    res = scraper.post(process_url, headers=headers, data=payload)
-    data = res.json()
-
-except Exception as e:
-    print(f"Error fetching data from Chartink: {e}")
-    data = {}
-
-# 3. Dynamic Table Formatting
+# Data formatting for HTML Table
 if 'data' in data and len(data['data']) > 0:
     df = pd.DataFrame(data['data'])
 
-    # Close Price Column
+    # Close Column Identification
     close_col = None
     for k in ['close', '0', 'scan-column-default-close']:
         if k in df.columns:
             close_col = k
             break
 
-    # Volume Column
+    # Volume Column Identification
     vol_col = None
     for k in ['volume', '2', '3', 'scan-column-default-volume']:
         if k in df.columns:
@@ -87,7 +77,7 @@ if 'data' in data and len(data['data']) > 0:
     # Symbol
     df['Symbol'] = df['nsecode'] if 'nsecode' in df.columns else ''
 
-    # Chart Button
+    # TradingView Daily Chart Link
     df['Chart'] = df['nsecode'].apply(
         lambda symbol: f'<a href="https://in.tradingview.com/chart/?symbol=NSE:{symbol}&interval=D" target="_blank" class="chart-btn">📈 Daily Chart</a>'
     )
@@ -97,7 +87,7 @@ if 'data' in data and len(data['data']) > 0:
 else:
     html_table = "<p style='text-align:center; padding:20px; font-weight:bold;'>Abhi koi stock filter mein nahi aaya.</p>"
 
-# 4. Generate Responsive Output
+# Generating Responsive HTML Page
 full_html = f"""
 <!DOCTYPE html>
 <html lang="hi">
@@ -174,4 +164,4 @@ full_html = f"""
 with open("rsi.html", "w", encoding="utf-8") as f:
     f.write(full_html)
 
-print("Scraper executed successfully with Cloudscraper!")
+print("Playwright script finished execution successfully!")
