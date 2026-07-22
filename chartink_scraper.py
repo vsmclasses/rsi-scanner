@@ -12,7 +12,7 @@ headers = {
     'X-Requested-With': 'XMLHttpRequest'
 }
 
-# 1. CSRF token aur scan_run_token fetch karna
+# 1. Fetch CSRF token and scan_run_token
 response = session.get(screener_url, headers=headers)
 soup = BeautifulSoup(response.text, 'html.parser')
 
@@ -36,11 +36,11 @@ payload = {
 res = session.post(process_url, headers=post_headers, data=payload)
 data = res.json()
 
-# 2. Dynamic Table Formatting
+# 2. Dynamic Table Formatting (Without Stock Name)
 if 'data' in data and len(data['data']) > 0:
     df = pd.DataFrame(data['data'])
     
-    # Safe column assignment for Close (CMP)
+    # Close price column identification
     if 'close' in df.columns:
         close_col = 'close'
     elif '0' in df.columns:
@@ -48,7 +48,7 @@ if 'data' in data and len(data['data']) > 0:
     else:
         close_col = df.columns[3] if len(df.columns) > 3 else None
 
-    # Safe column assignment for Volume
+    # Volume column identification
     if 'volume' in df.columns:
         vol_col = 'volume'
     elif '2' in df.columns:
@@ -58,20 +58,19 @@ if 'data' in data and len(data['data']) > 0:
     else:
         vol_col = df.columns[-1]
 
-    # CMP formatting
+    # Format Close
     if close_col and close_col in df.columns:
-        df['CMP'] = df[close_col].apply(lambda x: f"{float(x):,.2f}" if pd.notnull(x) else "-")
+        df['Close'] = df[close_col].apply(lambda x: f"{float(x):,.2f}" if pd.notnull(x) else "-")
     else:
-        df['CMP'] = "-"
+        df['Close'] = "-"
 
-    # Volume formatting
+    # Format Volume
     if vol_col and vol_col in df.columns:
         df['Volume'] = df[vol_col].apply(lambda x: f"{int(float(x)):,}" if pd.notnull(x) else "-")
     else:
         df['Volume'] = "-"
 
-    # Stock Name & Symbol
-    df['Stock Name'] = df['name'] if 'name' in df.columns else df.get('sr', '')
+    # Symbol
     df['Symbol'] = df['nsecode'] if 'nsecode' in df.columns else ''
 
     # TradingView Daily Chart Link Button
@@ -79,60 +78,69 @@ if 'data' in data and len(data['data']) > 0:
         lambda symbol: f'<a href="https://in.tradingview.com/chart/?symbol=NSE:{symbol}&interval=D" target="_blank" class="chart-btn">📈 Daily Chart</a>'
     )
 
-    # Columns Sequence: Stock Name, Symbol, CMP, Volume, Chart
-    final_df = df[['Stock Name', 'Symbol', 'CMP', 'Volume', 'Chart']].copy()
+    # Columns Sequence: Symbol, Close, Volume, Chart (Stock Name Removed)
+    final_df = df[['Symbol', 'Close', 'Volume', 'Chart']].copy()
 
     html_table = final_df.to_html(index=False, escape=False, classes='custom-table')
 else:
     html_table = "<p style='text-align:center; padding:20px; font-weight:bold;'>Abhi koi stock filter mein nahi aaya.</p>"
 
-# 3. HTML Page Styling
+# 3. Fully Responsive HTML Page (Mobile, Tablet, PC)
 full_html = f"""
 <!DOCTYPE html>
-<html>
+<html lang="hi">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+        * {{
+            box-sizing: border-box;
+        }}
         body {{
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
-            padding: 10px;
-            background-color: #fff;
+            padding: 8px;
+            background-color: #ffffff;
+        }}
+        /* Responsive Table Container */
+        .table-container {{
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
         }}
         table.custom-table {{
             width: 100%;
             border-collapse: collapse;
             font-size: 14px;
-            text-align: left;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            text-align: center;
+            white-space: nowrap;
         }}
         table.custom-table th {{
             background-color: #1e293b;
             color: #ffffff;
-            padding: 12px 15px;
+            padding: 12px 10px;
             font-weight: 600;
-            text-align: center;
         }}
         table.custom-table td {{
-            padding: 12px 15px;
+            padding: 10px 12px;
             border-bottom: 1px solid #e2e8f0;
-            text-align: center;
             color: #0f172a;
             font-weight: 500;
         }}
         table.custom-table td:first-child {{
             font-weight: bold;
-            text-align: left;
-            padding-left: 20px;
+            color: #1e293b;
         }}
         table.custom-table tr:hover {{
             background-color: #f8fafc;
         }}
-        /* Daily Chart Button Styling */
+        /* Mobile Touch-Friendly Button */
         .chart-btn {{
             background-color: #2563eb;
             color: #ffffff !important;
-            padding: 6px 14px;
+            padding: 6px 12px;
             text-decoration: none;
             border-radius: 6px;
             font-size: 12px;
@@ -143,10 +151,26 @@ full_html = f"""
         .chart-btn:hover {{
             background-color: #1d4ed8;
         }}
+
+        /* Mobile Adjustments */
+        @media screen and (max-width: 600px) {{
+            table.custom-table {{
+                font-size: 13px;
+            }}
+            table.custom-table th, table.custom-table td {{
+                padding: 8px 8px;
+            }}
+            .chart-btn {{
+                padding: 5px 8px;
+                font-size: 11px;
+            }}
+        }}
     </style>
 </head>
 <body>
-    {html_table}
+    <div class="table-container">
+        {html_table}
+    </div>
 </body>
 </html>
 """
@@ -154,4 +178,4 @@ full_html = f"""
 with open("rsi.html", "w", encoding="utf-8") as f:
     f.write(full_html)
 
-print("Scraper successfully updated with Symbol column!")
+print("Scraper successfully updated for mobile responsiveness!")
