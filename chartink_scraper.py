@@ -1,4 +1,4 @@
-import requests
+import cloudscraper
 import pandas as pd
 from bs4 import BeautifulSoup
 import re
@@ -6,69 +6,66 @@ import re
 screener_url = "https://chartink.com/screener/vikasrsi"
 process_url = "https://chartink.com/screener/process"
 
-session = requests.Session()
-
-headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-}
-
-# 1. Page load karke CSRF token aur exact scan_clause nikalna
-response = session.get(screener_url, headers=headers)
-soup = BeautifulSoup(response.text, 'html.parser')
-
-# CSRF Token
-csrf_meta = soup.find('meta', {'name': 'csrf-token'})
-csrf_token = csrf_meta['content'] if csrf_meta else ''
-
-# Scan Clause extraction (Formula Text)
-scan_clause = ""
-
-# Method A: Input tag se scan_clause dhoondna
-clause_input = soup.find('input', {'name': 'scan_clause'}) or soup.find('textarea', {'id': 'scan_clause'})
-if clause_input:
-    scan_clause = clause_input.get('value', '')
-
-# Method B: Regex se JavaScript code ke andar se dhoondna
-if not scan_clause:
-    match = re.search(r'scan_clause["\']?\s*:\s*["\'](.*?)["\']', response.text)
-    if match:
-        scan_clause = match.group(1)
-
-post_headers = {
-    'User-Agent': headers['User-Agent'],
-    'x-csrf-token': csrf_token,
-    'X-Requested-With': 'XMLHttpRequest',
-    'Origin': 'https://chartink.com',
-    'Referer': screener_url
-}
-
-# Payload mein scan_clause bhejenge
-payload = {
-    'scan_clause': scan_clause
-}
-
-# API Call
-res = session.post(process_url, headers=post_headers, data=payload)
+# Cloudflare bypass session setup
+scraper = cloudscraper.create_scraper(
+    browser={
+        'browser': 'chrome',
+        'platform': 'windows',
+        'desktop': True
+    }
+)
 
 try:
+    # 1. Page fetch for CSRF Token and scan_clause
+    response = scraper.get(screener_url)
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    # CSRF Token
+    csrf_meta = soup.find('meta', {'name': 'csrf-token'})
+    csrf_token = csrf_meta['content'] if csrf_meta else ''
+
+    # Extract scan_clause formula
+    scan_clause = ""
+    clause_input = soup.find('input', {'name': 'scan_clause'}) or soup.find('textarea', {'id': 'scan_clause'})
+    if clause_input:
+        scan_clause = clause_input.get('value', '')
+
+    if not scan_clause:
+        match = re.search(r'scan_clause["\']?\s*:\s*["\'](.*?)["\']', response.text)
+        if match:
+            scan_clause = match.group(1)
+
+    headers = {
+        'x-csrf-token': csrf_token,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Origin': 'https://chartink.com',
+        'Referer': screener_url
+    }
+
+    payload = {
+        'scan_clause': scan_clause
+    }
+
+    # 2. POST request to fetch live JSON stocks data
+    res = scraper.post(process_url, headers=headers, data=payload)
     data = res.json()
+
 except Exception as e:
-    print("JSON decode error:", e)
+    print(f"Error fetching data from Chartink: {e}")
     data = {}
 
-# 2. Extract & Format Table
+# 3. Dynamic Table Formatting
 if 'data' in data and len(data['data']) > 0:
     df = pd.DataFrame(data['data'])
 
-    # Close Price Column Identification
+    # Close Price Column
     close_col = None
     for k in ['close', '0', 'scan-column-default-close']:
         if k in df.columns:
             close_col = k
             break
 
-    # Volume Column Identification
+    # Volume Column
     vol_col = None
     for k in ['volume', '2', '3', 'scan-column-default-volume']:
         if k in df.columns:
@@ -90,7 +87,7 @@ if 'data' in data and len(data['data']) > 0:
     # Symbol
     df['Symbol'] = df['nsecode'] if 'nsecode' in df.columns else ''
 
-    # TradingView Link
+    # Chart Button
     df['Chart'] = df['nsecode'].apply(
         lambda symbol: f'<a href="https://in.tradingview.com/chart/?symbol=NSE:{symbol}&interval=D" target="_blank" class="chart-btn">📈 Daily Chart</a>'
     )
@@ -100,7 +97,7 @@ if 'data' in data and len(data['data']) > 0:
 else:
     html_table = "<p style='text-align:center; padding:20px; font-weight:bold;'>Abhi koi stock filter mein nahi aaya.</p>"
 
-# 3. Generating Responsive HTML
+# 4. Generate Responsive Output
 full_html = f"""
 <!DOCTYPE html>
 <html lang="hi">
@@ -177,4 +174,4 @@ full_html = f"""
 with open("rsi.html", "w", encoding="utf-8") as f:
     f.write(full_html)
 
-print("Scraper successfully extracted scan_clause and updated rsi.html!")
+print("Scraper executed successfully with Cloudscraper!")
