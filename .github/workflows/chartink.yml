@@ -19,7 +19,7 @@ jobs:
 
       - name: Install Dependencies & Playwright Browser
         run: |
-          pip install pandas playwright beautifulsoup4
+          pip install requests pandas playwright beautifulsoup4
           playwright install chromium
 
       - name: Fetch Chartink Results
