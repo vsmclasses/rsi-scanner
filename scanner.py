@@ -49,3 +49,11 @@ def download_stock(symbol):
     except:
 
         return None
+
+# --------------------------
+# Test Download
+# --------------------------
+
+df = download_stock(SYMBOLS[0])
+
+print(df.tail())
