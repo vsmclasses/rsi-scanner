@@ -37,7 +37,25 @@ daily = df.copy()
 weekly = create_weekly(df)
 
 monthly = create_monthly(df)
+# =====================================
+# Daily Indicators
+# =====================================
 
+daily["RSI"] = calculate_rsi(daily["Close"], 14)
+
+daily["SMA7"] = calculate_sma(daily["Close"], 7)
+
+# =====================================
+# Weekly Indicators
+# =====================================
+
+weekly["RSI"] = calculate_rsi(weekly["Close"], 14)
+
+# =====================================
+# Monthly Indicators
+# =====================================
+
+monthly["RSI"] = calculate_rsi(monthly["Close"], 14)
 print(daily.tail())
 
 print(weekly.tail())
