@@ -4,7 +4,7 @@ import pandas as pd
 
 # Chartink Screener details
 chartink_url = "https://chartink.com/screener/vikasrsi"
-process_url = "url = "https://chartink.com/screener/vikasrsi""
+process_url = "url = "https://chartink.com/screener/process""
 
 # Python Session bana rahe hain
 session = requests.Session()
