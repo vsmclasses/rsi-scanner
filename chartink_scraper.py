@@ -36,45 +36,87 @@ payload = {
 res = session.post(process_url, headers=post_headers, data=payload)
 data = res.json()
 
-# 2. Dynamic Data Processing (Fixes KeyError)
+# 2. Filtering & Customizing Table Columns
 if 'data' in data and len(data['data']) > 0:
     df = pd.DataFrame(data['data'])
     
-    # Serial Number
-    df.insert(0, 'Sr.', range(1, len(df) + 1))
+    # 1. Format CMP (Close Price)
+    df['cmp_val'] = df['close'].apply(lambda x: f"{x:,.2f}" if pd.notnull(x) else "-")
     
-    # Filter only useful columns safely
-    keep_cols = [c for c in ['Sr.', 'name', 'nsecode', 'close', 'per_chg', 'volume', '0', '1', '2', '3'] if c in df.columns]
+    # 2. Format Volume
+    df['vol_val'] = df['volume'].apply(lambda x: f"{int(x):,}" if pd.notnull(x) else "-")
     
-    if len(keep_cols) > 1:
-        df = df[keep_cols]
+    # 3. Create TradingView Daily Chart Button Link
+    df['chart_btn'] = df['nsecode'].apply(
+        lambda symbol: f'<a href="https://in.tradingview.com/chart/?symbol=NSE:{symbol}&interval=D" target="_blank" class="chart-btn">📈 Daily Chart</a>'
+    )
     
-    # Column Renaming
-    rename_dict = {
-        'name': 'Stock Name',
-        'nsecode': 'Symbol',
-        'close': 'Close',
-        'per_chg': '% Change',
-        'volume': 'Volume'
-    }
-    df = df.rename(columns=rename_dict)
+    # Selecting only required columns: Stock Name, CMP, Volume, Chart
+    final_df = df[['name', 'cmp_val', 'vol_val', 'chart_btn']].copy()
+    final_df.columns = ['Stock Name', 'CMP', 'Volume', 'Chart']
     
-    html_table = df.to_html(index=False, classes='chartink-table')
+    # Convert to HTML (escape=False for rendering HTML link button)
+    html_table = final_df.to_html(index=False, escape=False, classes='custom-table')
 else:
     html_table = "<p style='text-align:center; padding:20px; font-weight:bold;'>Abhi koi stock filter mein nahi aaya.</p>"
 
-# 3. HTML Layout Output
+# 3. Styling similar to reference design
 full_html = f"""
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
     <style>
-        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 10px; }}
-        table {{ width: 100%; border-collapse: collapse; font-size: 14px; text-align: left; }}
-        th {{ background-color: #f0f4f9; color: #333; padding: 10px; border-bottom: 2px solid #ccc; font-weight: 600; text-align: center; }}
-        td {{ padding: 8px 10px; border-bottom: 1px solid #eee; text-align: center; }}
-        tr:hover {{ background-color: #f8f9fa; }}
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 10px;
+            background-color: #fff;
+        }}
+        table.custom-table {{
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            text-align: left;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }}
+        table.custom-table th {{
+            background-color: #1e293b;
+            color: #ffffff;
+            padding: 12px 15px;
+            font-weight: 600;
+            text-align: center;
+        }}
+        table.custom-table td {{
+            padding: 12px 15px;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: center;
+            color: #0f172a;
+            font-weight: 500;
+        }}
+        table.custom-table td:first-child {{
+            font-weight: bold;
+            text-align: left;
+            padding-left: 20px;
+        }}
+        table.custom-table tr:hover {{
+            background-color: #f8fafc;
+        }}
+        /* Daily Chart Button Style */
+        .chart-btn {{
+            background-color: #2563eb;
+            color: #ffffff !important;
+            padding: 6px 14px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+            transition: background-color 0.2s ease;
+        }}
+        .chart-btn:hover {{
+            background-color: #1d4ed8;
+        }}
     </style>
 </head>
 <body>
@@ -86,4 +128,4 @@ full_html = f"""
 with open("rsi.html", "w", encoding="utf-8") as f:
     f.write(full_html)
 
-print("Scraper successfully executed!")
+print("Scraper successfully updated with TradingView links!")
