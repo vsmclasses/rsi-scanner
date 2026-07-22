@@ -36,37 +36,43 @@ payload = {
 res = session.post(process_url, headers=post_headers, data=payload)
 data = res.json()
 
-# 2. Dynamic Table Formatting (Without Stock Name)
+# 2. Dynamic Table Formatting (Sahi Close Price Detection ke saath)
 if 'data' in data and len(data['data']) > 0:
     df = pd.DataFrame(data['data'])
-    
-    # Close price column identification
-    if 'close' in df.columns:
-        close_col = 'close'
-    elif '0' in df.columns:
-        close_col = '0'
-    else:
-        close_col = df.columns[3] if len(df.columns) > 3 else None
 
-    # Volume column identification
-    if 'volume' in df.columns:
-        vol_col = 'volume'
-    elif '2' in df.columns:
-        vol_col = '2'
-    elif '3' in df.columns:
-        vol_col = '3'
-    else:
-        vol_col = df.columns[-1]
+    # EXACT CLOSE PRICE COLUMN IDENTIFICATION
+    # Chartink custom columns mein Close price standard keys ya index 0/1 par rehti hai
+    close_col = None
+    possible_close_keys = ['close', '0', 'close_price', 'scan-column-default-close']
+    for key in possible_close_keys:
+        if key in df.columns:
+            close_col = key
+            break
+            
+    if not close_col and len(df.columns) > 0:
+        # Fallback to first numerical price column if specific keys missing
+        for col in df.columns:
+            if col not in ['name', 'nsecode', 'per_chg', 'volume', 'sr']:
+                close_col = col
+                break
+
+    # EXACT VOLUME COLUMN IDENTIFICATION
+    vol_col = None
+    possible_vol_keys = ['volume', '2', '3', 'scan-column-default-volume']
+    for key in possible_vol_keys:
+        if key in df.columns:
+            vol_col = key
+            break
 
     # Format Close
     if close_col and close_col in df.columns:
-        df['Close'] = df[close_col].apply(lambda x: f"{float(x):,.2f}" if pd.notnull(x) else "-")
+        df['Close'] = df[close_col].apply(lambda x: f"{float(x):,.2f}" if pd.notnull(x) and str(x).replace('.','',1).isdigit() else "-")
     else:
         df['Close'] = "-"
 
     # Format Volume
     if vol_col and vol_col in df.columns:
-        df['Volume'] = df[vol_col].apply(lambda x: f"{int(float(x)):,}" if pd.notnull(x) else "-")
+        df['Volume'] = df[vol_col].apply(lambda x: f"{int(float(x)):,}" if pd.notnull(x) and str(x).replace('.','',1).isdigit() else "-")
     else:
         df['Volume'] = "-"
 
@@ -78,14 +84,14 @@ if 'data' in data and len(data['data']) > 0:
         lambda symbol: f'<a href="https://in.tradingview.com/chart/?symbol=NSE:{symbol}&interval=D" target="_blank" class="chart-btn">📈 Daily Chart</a>'
     )
 
-    # Columns Sequence: Symbol, Close, Volume, Chart (Stock Name Removed)
+    # Columns Sequence
     final_df = df[['Symbol', 'Close', 'Volume', 'Chart']].copy()
 
     html_table = final_df.to_html(index=False, escape=False, classes='custom-table')
 else:
     html_table = "<p style='text-align:center; padding:20px; font-weight:bold;'>No stock has appeared in the filter yet.</p>"
 
-# 3. Fully Responsive HTML Page (Mobile, Tablet, PC)
+# 3. Aapka Font Size & Alignment CSS (Retained)
 full_html = f"""
 <!DOCTYPE html>
 <html lang="hi">
@@ -179,4 +185,4 @@ full_html = f"""
 with open("rsi.html", "w", encoding="utf-8") as f:
     f.write(full_html)
 
-print("Scraper successfully updated for mobile responsiveness!")
+print("Scraper updated with correct close price mapping!")
