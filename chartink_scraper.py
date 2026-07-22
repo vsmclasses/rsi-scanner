@@ -6,42 +6,44 @@ import pandas as pd
 chartink_url = "https://chartink.com/screener/vikasrsi"
 process_url = "https://chartink.com/screener/process"
 
-# Python Session bana rahe hain
 session = requests.Session()
 
-# Step 1: Page open karke CSRF Token nikalna
-response = session.get(chartink_url)
+# Step 1: CSRF Token fetch karna
+headers_initial = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+}
+response = session.get(chartink_url, headers=headers_initial)
 soup = BeautifulSoup(response.text, 'html.parser')
 csrf_token = soup.select_one('[name="csrf-token"]')['content']
 
-# Step 2: Chartink ko 'Run Scan' ka request bhejna
+# Step 2: Exact Scan condition bhejkar result maangna
 headers = {
     'x-csrf-token': csrf_token,
-    'referer': chartink_url
+    'referer': chartink_url,
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 }
 
-# Scan Condition Clause (Screener payload)
+# Scan Condition (Agar aapne scanner ki conditions change ki hain toh scan_clause adjust kar sakte hain)
 payload = {
-    'scan_clause': '( {33619} ( latest rsi( 14 ) > 50 ) )'  # Chartink ka internal condition ID
+    'scan_clause': '( {cash} ( [0] 15 minute rsi > 60 ) )'
 }
 
 res = session.post(process_url, headers=headers, data=payload)
 data = res.json()
 
-# Step 3: Data ko Pandas DataFrame mein convert karna
+# Step 3: Result Process karna
 if 'data' in data and len(data['data']) > 0:
     df = pd.DataFrame(data['data'])
     
-    # Manpasand Columns select aur rename karein
+    # Required columns format karna
     df = df[['nsecode', 'name', 'close', 'per_chg', 'volume']]
     df.columns = ['Symbol', 'Stock Name', 'CMP', 'Chg %', 'Volume']
     
-    # Step 4: HTML Table Code Generate karna
     html_table = df.to_html(index=False, classes='chartink-table')
 else:
-    html_table = "<p style='text-align:center;'>Abhi koi stock filter mein nahi aaya.</p>"
+    html_table = "<p style='text-align:center; padding:20px;'>Abhi koi stock filter mein nahi aaya.</p>"
 
-# Step 5: Beautiful Page Structure ke sath Save karna
+# Step 4: HTML output file generate karna
 full_html = f"""
 <!DOCTYPE html>
 <html>
@@ -64,4 +66,4 @@ full_html = f"""
 with open("rsi.html", "w", encoding="utf-8") as f:
     f.write(full_html)
 
-print("Chartink result successfully updated to rsi.html!")
+print("Scraper successfully updated rsi.html!")
