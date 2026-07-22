@@ -2,6 +2,7 @@ name: Chartink Auto Scanner
 
 on:
   schedule:
+    # Mon-Fri Market hours mein har 1 ghante mein run hoga
     - cron: '0 3-10 * * 1-5'
   workflow_dispatch:
 
@@ -16,11 +17,12 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install Dependencies
+      - name: Install Dependencies & Chromium Browser
         run: |
-          pip install cloudscraper pandas beautifulsoup4
+          pip install playwright pandas beautifulsoup4
+          playwright install chromium
 
-      - name: Fetch Chartink Results
+      - name: Fetch Chartink Results via Playwright
         run: python chartink_scraper.py
 
       - name: Push to Repo
