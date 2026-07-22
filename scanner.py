@@ -56,6 +56,31 @@ weekly["RSI"] = calculate_rsi(weekly["Close"], 14)
 # =====================================
 
 monthly["RSI"] = calculate_rsi(monthly["Close"], 14)
+
+last = daily.iloc[-1]
+
+prev = daily.iloc[-2]
+
+weekly_last = weekly.iloc[-1]
+
+monthly_last = monthly.iloc[-1]
+
+print()
+
+print("----------------------")
+
+print("Current Price :", round(last["Close"],2))
+
+print("Previous RSI :", round(prev["RSI"],2))
+
+print("Current RSI :", round(last["RSI"],2))
+
+print("Weekly RSI :", round(weekly_last["RSI"],2))
+
+print("Monthly RSI :", round(monthly_last["RSI"],2))
+
+print("SMA 7 :", round(last["SMA7"],2))
+
 print(daily.tail())
 
 print(weekly.tail())
