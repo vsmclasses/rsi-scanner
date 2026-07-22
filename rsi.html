@@ -5,16 +5,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
             padding: 8px;
             background-color: #ffffff;
         }
-        /* Responsive Table Container */
         .table-container {
             width: 100%;
             overflow-x: auto;
@@ -46,10 +43,7 @@
             font-weight: bold;
             color: #1e293b;
         }
-        table.custom-table tr:hover {
-            background-color: #f8fafc;
-        }
-        /* Mobile Touch-Friendly Button */
+        table.custom-table tr:hover { background-color: #f8fafc; }
         .chart-btn {
             background-color: #2563eb;
             color: #ffffff !important;
@@ -61,22 +55,11 @@
             display: inline-block;
             transition: background-color 0.2s ease;
         }
-        .chart-btn:hover {
-            background-color: #1d4ed8;
-        }
-
-        /* Mobile Adjustments */
+        .chart-btn:hover { background-color: #1d4ed8; }
         @media screen and (max-width: 600px) {
-            table.custom-table {
-                font-size: 16px;
-            }
-            table.custom-table th, table.custom-table td {
-                padding: 8px 8px;
-            }
-            .chart-btn {
-                padding: 5px 8px;
-                font-size: 14px;
-            }
+            table.custom-table { font-size: 16px; }
+            table.custom-table th, table.custom-table td { padding: 8px 8px; }
+            .chart-btn { padding: 5px 8px; font-size: 14px; }
         }
     </style>
 </head>
