@@ -2,8 +2,8 @@ name: Chartink Auto Scanner
 
 on:
   schedule:
-    # Mon-Fri Market hours mein har 15 min run hoga (UTC time format)
-    - cron: '*/15 3-10 * * 1-5'
+    # Mon-Fri Market hours (9:00 AM - 3:30 PM IST) mein har 1 ghante me run hoga
+    - cron: '0 3-10 * * 1-5'
   workflow_dispatch:
 
 jobs:
