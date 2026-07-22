@@ -1,49 +1,58 @@
 
 <!DOCTYPE html>
-<html>
+<html lang="hi">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+        * {
+            box-sizing: border-box;
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
-            padding: 10px;
-            background-color: #fff;
+            padding: 8px;
+            background-color: #ffffff;
+        }
+        /* Responsive Table Container */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
         }
         table.custom-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 14px;
-            text-align: left;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            text-align: center;
+            white-space: nowrap;
         }
         table.custom-table th {
             background-color: #1e293b;
             color: #ffffff;
-            padding: 12px 15px;
+            padding: 12px 10px;
             font-weight: 600;
-            text-align: center;
         }
         table.custom-table td {
-            padding: 12px 15px;
+            padding: 10px 12px;
             border-bottom: 1px solid #e2e8f0;
-            text-align: center;
             color: #0f172a;
             font-weight: 500;
         }
         table.custom-table td:first-child {
             font-weight: bold;
-            text-align: left;
-            padding-left: 20px;
+            color: #1e293b;
         }
         table.custom-table tr:hover {
             background-color: #f8fafc;
         }
-        /* Daily Chart Button Styling */
+        /* Mobile Touch-Friendly Button */
         .chart-btn {
             background-color: #2563eb;
             color: #ffffff !important;
-            padding: 6px 14px;
+            padding: 6px 12px;
             text-decoration: none;
             border-radius: 6px;
             font-size: 12px;
@@ -54,22 +63,35 @@
         .chart-btn:hover {
             background-color: #1d4ed8;
         }
+
+        /* Mobile Adjustments */
+        @media screen and (max-width: 600px) {
+            table.custom-table {
+                font-size: 13px;
+            }
+            table.custom-table th, table.custom-table td {
+                padding: 8px 8px;
+            }
+            .chart-btn {
+                padding: 5px 8px;
+                font-size: 11px;
+            }
+        }
     </style>
 </head>
 <body>
-    <table border="1" class="dataframe custom-table">
+    <div class="table-container">
+        <table border="1" class="dataframe custom-table">
   <thead>
     <tr style="text-align: right;">
-      <th>Stock Name</th>
       <th>Symbol</th>
-      <th>CMP</th>
+      <th>Close</th>
       <th>Volume</th>
       <th>Chart</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td>Apollo Micro Systems Ltd</td>
       <td>APOLLO</td>
       <td>540,879.00</td>
       <td>13,696,045</td>
@@ -77,5 +99,6 @@
     </tr>
   </tbody>
 </table>
+    </div>
 </body>
 </html>
