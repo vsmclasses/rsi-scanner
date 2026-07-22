@@ -1,10 +1,10 @@
-name: Daily Auto Execution
+name: Daily Auto Execution (5 PM IST)
 
 on:
   schedule:
-    # 5:00 PM IST = 11:30 AM UTC
+    # 30 11 * * * ka matlab UTC 11:30 AM = India Time (IST) 5:00 PM
     - cron: '30 11 * * *'
-  workflow_dispatch: # Iss option se aap manually bhi run kar sakte hain
+  workflow_dispatch: # Iss button se aap jab chahein manually bhi run kar sakte hain
 
 jobs:
   run-script:
@@ -12,10 +12,10 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
@@ -26,4 +26,4 @@ jobs:
 
       - name: Run script
         run: |
-          python main.py  # <-- Apni main python file ka naam yahan likhein
+          python main.py  # <-- Agar aapki file ka naam alag hai (jaise app.py), toh yahan badal lein
