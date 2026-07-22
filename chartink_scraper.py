@@ -83,7 +83,7 @@ if 'data' in data and len(data['data']) > 0:
 
     html_table = final_df.to_html(index=False, escape=False, classes='custom-table')
 else:
-    html_table = "<p style='text-align:center; padding:20px; font-weight:bold;'>Abhi koi stock filter mein nahi aaya.</p>"
+    html_table = "<p style='text-align:center; padding:20px; font-weight:bold;'>No stock has appeared in the filter yet.</p>"
 
 # 3. Fully Responsive HTML Page (Mobile, Tablet, PC)
 full_html = f"""
@@ -113,12 +113,13 @@ full_html = f"""
         table.custom-table {{
             width: 100%;
             border-collapse: collapse;
-            font-size: 14px;
+            font-size: 18px;
             text-align: center;
             white-space: nowrap;
         }}
         table.custom-table th {{
-            background-color: #1e293b;
+            background-color: #2a3952;
+            text-align: center;
             color: #ffffff;
             padding: 12px 10px;
             font-weight: 600;
@@ -155,14 +156,14 @@ full_html = f"""
         /* Mobile Adjustments */
         @media screen and (max-width: 600px) {{
             table.custom-table {{
-                font-size: 13px;
+                font-size: 16px;
             }}
             table.custom-table th, table.custom-table td {{
                 padding: 8px 8px;
             }}
             .chart-btn {{
                 padding: 5px 8px;
-                font-size: 11px;
+                font-size: 14px;
             }}
         }}
     </style>
