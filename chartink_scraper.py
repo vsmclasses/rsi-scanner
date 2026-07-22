@@ -12,21 +12,14 @@ headers = {
     'X-Requested-With': 'XMLHttpRequest'
 }
 
-# Step 1: Chartink page se CSRF token aur scan_run_token extract karna
+# 1. Fetch CSRF token & scan_run_token
 response = session.get(screener_url, headers=headers)
 soup = BeautifulSoup(response.text, 'html.parser')
 
-# CSRF Token
 csrf_token = soup.find('meta', {'name': 'csrf-token'})['content']
 
-# Dynamic Token Extraction
 scan_run_token_input = soup.find('input', {'name': 'scan_run_token'}) or soup.find('input', {'id': 'scan_run_token'})
-
-if scan_run_token_input:
-    token_value = scan_run_token_input.get('value', '')
-else:
-    # Hardcoded fallback token from screenshot
-    token_value = "1a713774944d4be3554922f956afb90fcbdc336a8dcefecf6f7f83891f193e95"
+token_value = scan_run_token_input.get('value', '') if scan_run_token_input else "1a713774944d4be3554922f956afb90fcbdc336a8dcefecf6f7f83891f193e95"
 
 post_headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -35,7 +28,6 @@ post_headers = {
     'referer': screener_url
 }
 
-# Payload exact as shown in Network tab
 payload = {
     'scan_run_token': token_value,
     'column_clause': ' Daily Close as \'scan-column-default-close\',  Daily "close - 1 candle ago close / 1 candle ago close * 100" as \'scan-column-default-percent-change\', filternumber( daily close >  1 day ago close,1) as \'default-percent-change-conditional-filters-color\',  Daily Volume as \'scan-column-default-volume\''
@@ -44,25 +36,34 @@ payload = {
 res = session.post(process_url, headers=post_headers, data=payload)
 data = res.json()
 
-# Step 2: HTML Table Generator
+# 2. Dynamic Data Processing (Fixes KeyError)
 if 'data' in data and len(data['data']) > 0:
     df = pd.DataFrame(data['data'])
     
-    df['sr'] = range(1, len(df) + 1)
+    # Serial Number
+    df.insert(0, 'Sr.', range(1, len(df) + 1))
     
-    # Matching exact Chartink Columns
-    df = df[['sr', 'name', 'nsecode', 'close', 'per_chg', 'volume']]
-    df.columns = ['Sr.', 'Stock Name', 'Symbol', 'Close', '%_Change', 'Volume']
+    # Filter only useful columns safely
+    keep_cols = [c for c in ['Sr.', 'name', 'nsecode', 'close', 'per_chg', 'volume', '0', '1', '2', '3'] if c in df.columns]
     
-    # Formats
-    df['%_Change'] = df['%_Change'].apply(lambda x: f"{x:.2f}%" if pd.notnull(x) else "0.00%")
-    df['Volume'] = df['Volume'].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else "0")
+    if len(keep_cols) > 1:
+        df = df[keep_cols]
+    
+    # Column Renaming
+    rename_dict = {
+        'name': 'Stock Name',
+        'nsecode': 'Symbol',
+        'close': 'Close',
+        'per_chg': '% Change',
+        'volume': 'Volume'
+    }
+    df = df.rename(columns=rename_dict)
     
     html_table = df.to_html(index=False, classes='chartink-table')
 else:
     html_table = "<p style='text-align:center; padding:20px; font-weight:bold;'>Abhi koi stock filter mein nahi aaya.</p>"
 
-# Final Output HTML
+# 3. HTML Layout Output
 full_html = f"""
 <!DOCTYPE html>
 <html>
@@ -74,7 +75,6 @@ full_html = f"""
         th {{ background-color: #f0f4f9; color: #333; padding: 10px; border-bottom: 2px solid #ccc; font-weight: 600; text-align: center; }}
         td {{ padding: 8px 10px; border-bottom: 1px solid #eee; text-align: center; }}
         tr:hover {{ background-color: #f8f9fa; }}
-        td:nth-child(5) {{ color: #2e7d32; font-weight: bold; }}
     </style>
 </head>
 <body>
@@ -86,4 +86,4 @@ full_html = f"""
 with open("rsi.html", "w", encoding="utf-8") as f:
     f.write(full_html)
 
-print("Scraper successfully updated with token!")
+print("Scraper successfully executed!")
