@@ -12,7 +12,7 @@ headers = {
     'X-Requested-With': 'XMLHttpRequest'
 }
 
-# 1. Fetch CSRF token & scan_run_token
+# 1. CSRF token aur scan_run_token fetch karna
 response = session.get(screener_url, headers=headers)
 soup = BeautifulSoup(response.text, 'html.parser')
 
@@ -36,31 +36,56 @@ payload = {
 res = session.post(process_url, headers=post_headers, data=payload)
 data = res.json()
 
-# 2. Filtering & Customizing Table Columns
+# 2. Dynamic Table Formatting
 if 'data' in data and len(data['data']) > 0:
     df = pd.DataFrame(data['data'])
     
-    # 1. Format CMP (Close Price)
-    df['cmp_val'] = df['close'].apply(lambda x: f"{x:,.2f}" if pd.notnull(x) else "-")
-    
-    # 2. Format Volume
-    df['vol_val'] = df['volume'].apply(lambda x: f"{int(x):,}" if pd.notnull(x) else "-")
-    
-    # 3. Create TradingView Daily Chart Button Link
-    df['chart_btn'] = df['nsecode'].apply(
+    # Safe column assignment for Close (CMP)
+    if 'close' in df.columns:
+        close_col = 'close'
+    elif '0' in df.columns:
+        close_col = '0'
+    else:
+        close_col = df.columns[3] if len(df.columns) > 3 else None
+
+    # Safe column assignment for Volume
+    if 'volume' in df.columns:
+        vol_col = 'volume'
+    elif '2' in df.columns:
+        vol_col = '2'
+    elif '3' in df.columns:
+        vol_col = '3'
+    else:
+        vol_col = df.columns[-1]
+
+    # CMP formatting
+    if close_col and close_col in df.columns:
+        df['CMP'] = df[close_col].apply(lambda x: f"{float(x):,.2f}" if pd.notnull(x) else "-")
+    else:
+        df['CMP'] = "-"
+
+    # Volume formatting
+    if vol_col and vol_col in df.columns:
+        df['Volume'] = df[vol_col].apply(lambda x: f"{int(float(x)):,}" if pd.notnull(x) else "-")
+    else:
+        df['Volume'] = "-"
+
+    # Stock Name
+    df['Stock Name'] = df['name'] if 'name' in df.columns else df.get('sr', '')
+
+    # TradingView Daily Chart Link Button
+    df['Chart'] = df['nsecode'].apply(
         lambda symbol: f'<a href="https://in.tradingview.com/chart/?symbol=NSE:{symbol}&interval=D" target="_blank" class="chart-btn">📈 Daily Chart</a>'
     )
-    
-    # Selecting only required columns: Stock Name, CMP, Volume, Chart
-    final_df = df[['name', 'cmp_val', 'vol_val', 'chart_btn']].copy()
-    final_df.columns = ['Stock Name', 'CMP', 'Volume', 'Chart']
-    
-    # Convert to HTML (escape=False for rendering HTML link button)
+
+    # Select only Stock Name, CMP, Volume, Chart
+    final_df = df[['Stock Name', 'CMP', 'Volume', 'Chart']].copy()
+
     html_table = final_df.to_html(index=False, escape=False, classes='custom-table')
 else:
     html_table = "<p style='text-align:center; padding:20px; font-weight:bold;'>Abhi koi stock filter mein nahi aaya.</p>"
 
-# 3. Styling similar to reference design
+# 3. HTML Page with Clean UI Styling
 full_html = f"""
 <!DOCTYPE html>
 <html>
@@ -102,7 +127,7 @@ full_html = f"""
         table.custom-table tr:hover {{
             background-color: #f8fafc;
         }}
-        /* Daily Chart Button Style */
+        /* Daily Chart Button Styling */
         .chart-btn {{
             background-color: #2563eb;
             color: #ffffff !important;
@@ -128,4 +153,4 @@ full_html = f"""
 with open("rsi.html", "w", encoding="utf-8") as f:
     f.write(full_html)
 
-print("Scraper successfully updated with TradingView links!")
+print("Scraper successfully updated with TradingView Daily Chart links!")
