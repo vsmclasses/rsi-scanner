@@ -85,7 +85,7 @@ if 'data' in data and len(data['data']) > 0:
     final_df = df[['Symbol', 'Close', 'Volume', 'Chart']].copy()
     html_table = final_df.to_html(index=False, escape=False, classes='custom-table')
 else:
-    html_table = "<p style='text-align:center; padding:20px; font-weight:bold;'>Abhi koi stock filter mein nahi aaya.</p>"
+    html_table = "<p style='text-align:center; padding:20px; font-weight:bold;'>No stock has appeared in the filter yet.</p>"
 
 # Generating Responsive HTML Page
 full_html = f"""
