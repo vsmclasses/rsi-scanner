@@ -2,8 +2,8 @@ name: Chartink Auto Scanner
 
 on:
   schedule:
-    # Mon-Fri Market hours mein har 1 ghante mein run hoga
-    - cron: '0 3-10 * * 1-5'
+    # IST: सुबह 9:00 AM से शाम 5:00 PM तक हर 1 घंटे (Exact hour) में रन होगा
+    - cron: '30 3-11 * * 1-5'
   workflow_dispatch:
 
 jobs:
