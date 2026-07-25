@@ -87,7 +87,7 @@ if 'data' in data and len(data['data']) > 0:
 else:
     html_table = "<p style='text-align:center; padding:20px; font-weight:bold;'>Abhi koi stock filter mein nahi aaya.</p>"
 
-# Generating Responsive HTML Page with Disclaimer
+# Generating Responsive HTML Page with Plain Text Disclaimer
 full_html = f"""
 <!DOCTYPE html>
 <html lang="hi">
@@ -166,7 +166,7 @@ full_html = f"""
         {html_table}
     </div>
     <div class="disclaimer">
-        Data source: <a href="https://chartink.com/screener/vikasrsi" target="_blank" style="color: #64748b; text-decoration: underline;">Chartink Screener</a> (Educational Purpose Only)
+        Data source: Chartink Screener (Educational Purpose Only)
     </div>
 </body>
 </html>
