@@ -79,7 +79,7 @@ if 'data' in data and len(data['data']) > 0:
 
     # TradingView Daily Chart Link
     df['Chart'] = df['nsecode'].apply(
-        lambda symbol: f'<a href="https://in.tradingview.com/chart/?symbol=NSE:{symbol}&interval=D" target="_blank" class="chart-btn">📈 Daily Chart</a>'
+        lambda symbol: f'<a href="https://in.tradingview.com/chart/?symbol=NSE:{symbol}&interval=D" target="_blank" class="chart-btn">📈 Chart</a>'
     )
 
     final_df = df[['Symbol', 'Close', 'Volume', 'Chart']].copy()
