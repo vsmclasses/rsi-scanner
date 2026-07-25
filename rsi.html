@@ -56,10 +56,18 @@
             transition: background-color 0.2s ease;
         }
         .chart-btn:hover { background-color: #1d4ed8; }
+        .disclaimer {
+            margin-top: 12px;
+            font-size: 13px;
+            color: #64748b;
+            text-align: center;
+            font-style: italic;
+        }
         @media screen and (max-width: 600px) {
             table.custom-table { font-size: 16px; }
             table.custom-table th, table.custom-table td { padding: 8px 8px; }
             .chart-btn { padding: 5px 8px; font-size: 14px; }
+            .disclaimer { font-size: 12px; }
         }
     </style>
 </head>
@@ -79,16 +87,19 @@
       <td>SCHNEIDER</td>
       <td>1,352.60</td>
       <td>130,128</td>
-      <td><a href="https://in.tradingview.com/chart/?symbol=NSE:SCHNEIDER&interval=D" target="_blank" class="chart-btn">📈 Chart</a></td>
+      <td><a href="https://in.tradingview.com/chart/?symbol=NSE:SCHNEIDER&interval=D" target="_blank" class="chart-btn">📈 Daily Chart</a></td>
     </tr>
     <tr>
       <td>ADFFOODS</td>
       <td>307.05</td>
       <td>224,298</td>
-      <td><a href="https://in.tradingview.com/chart/?symbol=NSE:ADFFOODS&interval=D" target="_blank" class="chart-btn">📈 Chart</a></td>
+      <td><a href="https://in.tradingview.com/chart/?symbol=NSE:ADFFOODS&interval=D" target="_blank" class="chart-btn">📈 Daily Chart</a></td>
     </tr>
   </tbody>
 </table>
+    </div>
+    <div class="disclaimer">
+        Data source: <a href="https://chartink.com/screener/vikasrsi" target="_blank" style="color: #64748b; text-decoration: underline;">Chartink Screener</a> (Educational Purpose Only)
     </div>
 </body>
 </html>
