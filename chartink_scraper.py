@@ -79,15 +79,15 @@ if 'data' in data and len(data['data']) > 0:
 
     # TradingView Daily Chart Link
     df['Chart'] = df['nsecode'].apply(
-        lambda symbol: f'<a href="https://in.tradingview.com/chart/?symbol=NSE:{symbol}&interval=D" target="_blank" class="chart-btn">📈 Chart</a>'
+        lambda symbol: f'<a href="https://in.tradingview.com/chart/?symbol=NSE:{symbol}&interval=D" target="_blank" class="chart-btn">📈 Daily Chart</a>'
     )
 
     final_df = df[['Symbol', 'Close', 'Volume', 'Chart']].copy()
     html_table = final_df.to_html(index=False, escape=False, classes='custom-table')
 else:
-    html_table = "<p style='text-align:center; padding:20px; font-weight:bold;'>No stock has appeared in the filter yet.</p>"
+    html_table = "<p style='text-align:center; padding:20px; font-weight:bold;'>Abhi koi stock filter mein nahi aaya.</p>"
 
-# Generating Responsive HTML Page
+# Generating Responsive HTML Page with Disclaimer
 full_html = f"""
 <!DOCTYPE html>
 <html lang="hi">
@@ -146,16 +146,27 @@ full_html = f"""
             transition: background-color 0.2s ease;
         }}
         .chart-btn:hover {{ background-color: #1d4ed8; }}
+        .disclaimer {{
+            margin-top: 12px;
+            font-size: 13px;
+            color: #64748b;
+            text-align: center;
+            font-style: italic;
+        }}
         @media screen and (max-width: 600px) {{
             table.custom-table {{ font-size: 16px; }}
             table.custom-table th, table.custom-table td {{ padding: 8px 8px; }}
             .chart-btn {{ padding: 5px 8px; font-size: 14px; }}
+            .disclaimer {{ font-size: 12px; }}
         }}
     </style>
 </head>
 <body>
     <div class="table-container">
         {html_table}
+    </div>
+    <div class="disclaimer">
+        Data source: <a href="https://chartink.com/screener/vikasrsi" target="_blank" style="color: #64748b; text-decoration: underline;">Chartink Screener</a> (Educational Purpose Only)
     </div>
 </body>
 </html>
